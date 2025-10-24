@@ -1,0 +1,58 @@
+./imcl install 9.0.5.20
+-
+WS
+-
+WAS
+-
+DistOnly
+-
+IFPH65161_9.0.5020.20250214_1250 9.0.5.15
+-
+WS
+-
+WAS
+-
+IFPH65941_9.0.5015.20250429_2224 9.0.5.15
+-
+WS
+-
+WAS
+-
+IFPH66028_9.0.5015.20250508_2317
+-
+installationDirectory /apps/WebSphere/AppServer
+-
+9.0
+-
+repositories /mnt/rafw_media/WA
+S90/9.0.5.22/9.0.5.20
+-
+WS
+-
+WAS
+-
+IFPH65161/,/mnt/rafw_media/WAS90/9.0.5.22/9.0.5.15
+-
+WS
+-
+WAS
+-
+IFPH65941/,/mnt/rafw_media/WAS90/9.0.5.22/9.0.5.15
+-
+WS
+-
+WAS
+-
+IFPH66028/
+-
+sP
+-
+acceptLicense
+-
+log /apps/WebSphere/logs/WAS90522_JDK80835_ifixes3_PI
+-
+25.log
+ 
+ 
+ 
+ https://teams.microsoft.com/l/message/19:meeting_MmM4YmY3MjMtZmM4Mi00ZWVmLWE0MDEtM2QzYzZkOTk5YjZm@thread.v2/1748629153564?context=%7B%22contextType%22%3A%22chat%22%7D

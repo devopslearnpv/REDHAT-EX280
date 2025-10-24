@@ -1,0 +1,18 @@
+1. lsblk 
+2. growpart /dev/sda 1
+3. resize2fs /dev/sda1
+
+
+🧹 Step-by-Step to Remove All Docker Images
+ 
+1. Stop all running containers (since images can’t be removed if in use):
+docker stop $(docker ps -q)
+If no containers are running, this command will do nothing.
+2. Remove all containers (to free the images):
+docker rm $(docker ps -a -q)
+3. Remove all images:
+docker rmi $(docker images -q)
+This removes all local images, including dangling ones.
+Optional: Force removal (if some images are still protected)
+docker rmi -f $(docker images -q)
+ 

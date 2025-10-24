@@ -1,0 +1,203 @@
+✅ Step 1: Install Helm
+ 
+📌 Command:
+ 
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+ 
+ 
+---
+ 
+✅ Step 2: Install NGINX using Helm and show “Namaskara Bengaluru”
+ 
+📌 Step-by-step:
+ 
+1. Add the Helm repo:
+ 
+ 
+ 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+ 
+2. Create a ConfigMap with custom index.html
+ 
+ 
+ 
+kubectl create configmap nginx-index --from-literal=index.html="<html><body><h1>Namaskara Bengaluru</h1></body></html>"
+ 
+3. Create a Helm values file to mount the ConfigMap
+ 
+ 
+ 
+cat <<EOF > nginx-values.yaml
+extraVolumes:
+  - name: custom-index
+    configMap:
+      name: nginx-index
+extraVolumeMounts:
+  - name: custom-index
+    mountPath: /app/index.html
+    subPath: index.html
+EOF
+ 
+4. Install NGINX with your custom page
+ 
+ 
+ 
+helm install my-nginx bitnami/nginx -f nginx-values.yaml
+ 
+5. Access the NGINX page
+ 
+ 
+ 
+kubectl port-forward svc/my-nginx 8080:80
+ 
+🔗 Now open in your browser: http://localhost:8080
+ 
+ 
+---
+ 
+✅ Step 3: Install MySQL and create a table and user
+ 
+📌 Step-by-step:
+ 
+1. Install MySQL using Helm
+ 
+ 
+ 
+helm install my-mysql bitnami/mysql --set auth.rootPassword=rootpass,auth.database=mydb
+ 
+2. Wait and get MySQL pod name
+ 
+ 
+ 
+kubectl get pods -l app.kubernetes.io/name=mysql
+ 
+3. Store pod name in variable
+ 
+ 
+ 
+MYSQL_POD=$(kubectl get pods -l app.kubernetes.io/name=mysql -o jsonpath="{.items[0].metadata.name}")
+ 
+4. Connect and run SQL commands
+ 
+ 
+ 
+kubectl exec -it $MYSQL_POD -- mysql -uroot -prootpass mydb -e "CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100));"
+kubectl exec -it $MYSQL_POD -- mysql -uroot -prootpass mydb -e "CREATE USER 'custom'@'%' IDENTIFIED BY 'pass123';"
+kubectl exec -it $MYSQL_POD -- mysql -uroot -prootpass mydb -e "GRANT ALL PRIVILEGES ON mydb.* TO 'custom'@'%';"
+ 
+ 
+---
+ 
+✅ Step 4: Install WildFly using Helm
+ 
+📌 Step-by-step:
+ 
+1. Add WildFly chart repo
+ 
+ 
+ 
+helm repo add wildfly https://docs.wildfly.org/wildfly-charts/
+helm repo update
+ 
+2. Install WildFly
+ 
+ 
+ 
+helm install my-wildfly wildfly/wildfly
+ 
+3. Access WildFly application
+ 
+ 
+ 
+kubectl port-forward svc/my-wildfly 8080:8080
+ 
+🔗 Open in browser: http://localhost:8080
+ 
+ 
+---
+ 
+✅ Step 5: Install Prometheus using Helm
+ 
+📌 Step-by-step:
+ 
+1. Add Prometheus Helm repo
+ 
+ 
+ 
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+ 
+2. Install Prometheus
+ 
+ 
+ 
+helm install my-prometheus prometheus-community/prometheus
+ 
+3. Access Prometheus
+ 
+ 
+ 
+kubectl port-forward svc/my-prometheus-server 9090:80
+ 
+🔗 Open: http://localhost:9090
+ 
+ 
+---
+ 
+✅ Step 6: Deploy Grafana manually and access it
+ 
+📌 Step-by-step:
+ 
+1. Create Grafana Deployment
+ 
+ 
+ 
+kubectl create deployment grafana --image=grafana/grafana
+ 
+2. Expose as service
+ 
+ 
+ 
+kubectl expose deployment grafana --type=NodePort --port=3000
+ 
+3. Access Grafana
+ 
+ 
+ 
+kubectl port-forward svc/grafana 3000:3000
+ 
+🔗 Open: http://localhost:3000
+Login: admin / admin
+ 
+ 
+---
+ 
+✅ Step 7: Install Grafana using Helm
+ 
+📌 Step-by-step:
+ 
+1. Add Grafana Helm repo
+ 
+ 
+ 
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+ 
+2. Install Grafana
+ 
+ 
+ 
+helm install my-grafana grafana/grafana --set adminPassword=admin123
+ 
+3. Access Grafana
+ 
+ 
+ 
+kubectl port-forward svc/my-grafana 3000:80
+ 
+🔗 Open: http://localhost:3000
+Login: admin / admin123
+ 

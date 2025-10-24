@@ -1,0 +1,142 @@
+🔹 Daily Command Cheat Sheet for EX280 (oc + kubectl equivalents)
+Day 1 – Core Administration
+# Login
+oc login -u <user> -p <password> https://<api-server>:6443
+
+# Current project / switch project
+oc project
+oc project <project-name>
+
+# List projects
+oc get projects
+
+# Create / delete project
+oc new-project dev --description="Dev Project"
+oc delete project dev
+
+# Create user/group (admin side)
+oc adm groups new devs
+oc adm groups add-users devs user1 user2
+
+# Assign roles
+oc adm policy add-role-to-user edit user1 -n dev
+oc adm policy add-role-to-group admin devs -n dev
+
+Day 2 – Application Deployment
+# Deploy app from image
+oc new-app --name=myapp quay.io/openshift/hello-openshift
+
+# Deploy app from Git repo
+oc new-app https://github.com/sclorg/nodejs-ex.git --name=nodejs-app
+
+# List pods, svc, routes
+oc get pods,svc,route
+
+# Expose service
+oc expose svc myapp
+
+# Scale deployment
+oc scale deployment myapp --replicas=3
+
+# Set env vars
+oc set env deployment/myapp ENV=prod
+
+# Attach ConfigMap / Secret
+oc set env deployment/myapp --from=configmap/myconfig
+oc set env deployment/myapp --from=secret/mysecret
+
+Day 3 – Networking
+# Services
+oc expose pod myapp --port=8080 --name=myapp-svc
+oc get svc
+
+# Routes
+oc expose svc myapp
+oc get route
+
+# NetworkPolicy (apply from yaml)
+oc apply -f netpol.yaml
+oc get networkpolicy
+
+Day 4 – Storage
+# List storage classes
+oc get storageclass
+
+# Create PVC
+oc apply -f pvc.yaml
+oc get pvc
+
+# Check PVs
+oc get pv
+
+# Attach PVC to pod
+oc set volume deployment/myapp --add --name=data --claim-name=myclaim --mount-path=/data
+
+Day 5 – Security & Quotas
+# Service Account
+oc create sa mysa
+oc get sa
+oc describe sa mysa
+
+# Run pod with SA
+oc run pod1 --image=busybox --dry-run=client -o yaml --overrides='{"spec": {"serviceAccountName": "mysa"}}'
+
+# Assign SCC
+oc adm policy add-scc-to-user anyuid -z mysa -n dev
+
+# Resource Quota
+oc create quota myquota --hard=cpu=2,memory=4Gi,pods=10
+
+# LimitRange
+oc create limitrange mem-limit --limits=memory=512Mi,1Gi,cpu=500m,1
+
+Day 6 – Troubleshooting & Operators
+# Logs
+oc logs podname
+oc logs -f podname
+
+# Exec / debug
+oc rsh podname
+oc exec -it podname -- /bin/bash
+oc debug podname --to-namespace=dev
+
+# Events
+oc get events --sort-by=.metadata.creationTimestamp
+
+# Resource usage
+oc adm top nodes
+oc adm top pods
+
+# Install operator
+oc apply -f operator-subscription.yaml
+oc get csv -n openshift-operators
+
+Day 7 – Mock Exam (All-in-One)
+# Create project
+oc new-project exam
+
+# Deploy app + expose
+oc new-app quay.io/openshift/hello-openshift --name=examapp
+oc expose svc examapp
+
+# Attach ConfigMap
+oc create configmap appconfig --from-literal=APP_MODE=production
+oc set env deployment/examapp --from=configmap/appconfig
+
+# Attach Secret
+oc create secret generic dbsecret --from-literal=DB_PASS=redhat
+oc set env deployment/examapp --from=secret/dbsecret
+
+# Attach PVC
+oc apply -f pvc.yaml
+oc set volume deployment/examapp --add --name=data --claim-name=myclaim --mount-path=/opt/data
+
+# Apply NetworkPolicy
+oc apply -f netpol.yaml
+
+# Apply Quota
+oc create quota examquota --hard=cpu=2,memory=2Gi,pods=5
+
+
+✅ This cheat sheet gives you the exact oc commands you’ll need on exam day.
+✅ You can practice one section each day along with your 7-day revision plan.

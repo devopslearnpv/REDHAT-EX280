@@ -1,0 +1,145 @@
+---
+ 
+✅ Step 1: Create Namespace + Quota + Limit
+ 
+Save the below as demo-simple-namespace.yaml:
+ 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-simple
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: demo-simple-quota
+  namespace: demo-simple
+spec:
+  hard:
+    pods: "5"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: container-defaults
+  namespace: demo-simple
+spec:
+  limits:
+  - default:
+      cpu: 250m
+      memory: 256Mi
+    type: Container
+ 
+Apply it:
+ 
+kubectl apply -f demo-simple-namespace.yaml
+ 
+ 
+---
+ 
+✅ Step 2: Create ConfigMap
+ 
+Save as hello-configmap.yaml:
+ 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-config
+  namespace: demo-simple
+data:
+  APP_GREETING: "Hello Manyata!"
+ 
+Apply:
+ 
+kubectl apply -f hello-configmap.yaml
+ 
+ 
+---
+ 
+✅ Step 3: Create Deployment
+ 
+Save as hello-deployment.yaml:
+ 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-liberty
+  namespace: demo-simple
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-liberty
+  template:
+    metadata:
+      labels:
+        app: hello-liberty
+    spec:
+      containers:
+      - name: hello-liberty
+        image: prashanthvedarathna/hello-liberty:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: APP_GREETING
+          valueFrom:
+            configMapKeyRef:
+              name: hello-config
+              key: APP_GREETING
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9080
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9080
+          initialDelaySeconds: 10
+ 
+Apply:
+ 
+kubectl apply -f hello-deployment.yaml
+ 
+ 
+---
+ 
+✅ Step 4: Create Service
+ 
+Save as hello-service.yaml:
+ 
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+  namespace: demo-simple
+spec:
+  selector:
+    app: hello-liberty
+  ports:
+  - port: 80
+    targetPort: 9080
+ 
+Apply:
+ 
+kubectl apply -f hello-service.yaml
+ 
+ 
+---
+ 
+✅ Step 5: Validation
+ 
+Run:
+ 
+kubectl get all -n demo-simple
+ 
+Forward the port:
+ 
+kubectl port-forward svc/hello-svc 8080:80 -n demo-simple
+ 
+Test with curl:
+ 
+curl http://localhost:8080

@@ -1,0 +1,312 @@
+ 
+✅ Task 1: hello-liberty Microservice
+ 
+Step-by-Step Execution
+ 
+🔹 Step 1: Clone and Build
+ 
+git clone https://github.com/cubensquare/tasks-kyn
+cd tasks-kyn
+./mvnw liberty:dev
+ 
+After build, hello-liberty.jar will be in the target/ folder.
+ 
+ 
+---
+ 
+🔹 Step 2: Dockerfile
+ 
+# Dockerfile.hello
+FROM openliberty/open-liberty:kernel-slim-java17
+COPY target/hello-liberty.jar /config/apps/
+ 
+Build and Push:
+ 
+docker build -t prashanthvedarathna/hello-liberty:1.0 -f Dockerfile.hello .
+docker push prashanthvedarathna/hello-liberty:1.0
+ 
+ 
+---
+ 
+🔹 Step 3: Kubernetes Resources
+ 
+1. Namespace, Quota, and LimitRange
+ 
+ 
+ 
+# demo-simple-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-simple
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: demo-simple-quota
+  namespace: demo-simple
+spec:
+  hard:
+    pods: "5"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: container-defaults
+  namespace: demo-simple
+spec:
+  limits:
+  - default:
+      cpu: 250m
+      memory: 256Mi
+    type: Container
+ 
+2. ConfigMap
+ 
+ 
+ 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-config
+  namespace: demo-simple
+data:
+  APP_GREETING: "Hello Manyata!"
+ 
+3. Deployment
+ 
+ 
+ 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-liberty
+  namespace: demo-simple
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-liberty
+  template:
+    metadata:
+      labels:
+        app: hello-liberty
+    spec:
+      containers:
+      - name: hello-liberty
+        image: prashanthvedarathna/hello-liberty:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: APP_GREETING
+          valueFrom:
+            configMapKeyRef:
+              name: hello-config
+              key: APP_GREETING
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9080
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9080
+          initialDelaySeconds: 10
+ 
+4. Service
+ 
+ 
+ 
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+  namespace: demo-simple
+spec:
+  selector:
+    app: hello-liberty
+  ports:
+  - port: 80
+    targetPort: 9080
+ 
+5. Validation
+ 
+ 
+ 
+kubectl port-forward svc/hello-svc 8080:80 -n demo-simple
+curl http://localhost:8080
+ 
+ 
+---
+ 
+✅ Task 2: orders-api Microservice
+ 
+Step-by-Step Execution
+ 
+🔹 Dockerfile
+ 
+# Dockerfile.orders
+FROM openliberty/open-liberty:kernel-slim-java17
+RUN mkdir -p /logs && chown 1001:0 /logs
+COPY target/orders-api.jar /config/apps/
+ 
+Build and Push:
+ 
+docker build -t prashanthvedarathna/orders-api:1.0 -f Dockerfile.orders .
+docker push prashanthvedarathna/orders-api:1.0
+ 
+ 
+---
+ 
+🔹 Kubernetes Resources
+ 
+1. Namespace
+ 
+ 
+ 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-orders
+ 
+2. PersistentVolumeClaim
+ 
+ 
+ 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: orders-logs
+  namespace: demo-orders
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+ 
+3. Deployment with Sidecar
+ 
+ 
+ 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+  namespace: demo-orders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-api
+  template:
+    metadata:
+      labels:
+        app: orders-api
+    spec:
+      containers:
+      - name: orders-api
+        image: prashanthvedarathna/orders-api:1.0
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - name: logs
+          mountPath: /logs
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9080
+          initialDelaySeconds: 8
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9080
+          initialDelaySeconds: 15
+      - name: fluent-sidecar
+        image: fluent/fluent-bit
+        command: ["fluent-bit", "-i", "tail", "-p", "path=/logs/orders.log", "-o", "stdout"]
+        volumeMounts:
+        - name: logs
+          mountPath: /logs
+      volumes:
+      - name: logs
+        persistentVolumeClaim:
+          claimName: orders-logs
+ 
+4. Service
+ 
+ 
+ 
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-svc
+  namespace: demo-orders
+spec:
+  selector:
+    app: orders-api
+  ports:
+  - port: 80
+    targetPort: 9080
+ 
+5. Horizontal Pod Autoscaler
+ 
+ 
+ 
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orders-api-hpa
+  namespace: demo-orders
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orders-api
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+ 
+ 
+---
+ 
+🔹 Validation
+ 
+Confirm PVC:
+ 
+ 
+kubectl get pvc -n demo-orders
+ 
+Simulate Load:
+ 
+ 
+kubectl port-forward svc/orders-svc 8081:80 -n demo-orders
+hey -z 30s -c 20 http://localhost:8081
+ 
+Confirm scaling:
+ 
+ 
+kubectl get hpa -n demo-orders
+kubectl get pods -n demo-orders
+ 
+Tail logs:
+ 
+ 
+kubectl logs -l app=orders-api -c fluent-sidecar -n demo-orders

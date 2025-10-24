@@ -1,0 +1,78 @@
+Task  1 – Hello-Liberty (simple)
+
+Context:
+The business wants a tiny “hello” micro-service packaged with Open Liberty and deployed on 
+ your multi-node Kubernetes cluster.Build the image, publish it to Docker Hub, then deploy it in its own namespace using best-practice objects.
+
+Step 1- git clone https://github.com/cubensquare/tasks-kyn
+Step 2 - unzip and then Run maven command :   
+           cd tasks-kyn 
+           mvnw liberty: dev
+Step 3 - Start your Dockerfile .. jar file will be in target folder
+ 
+
+Requirements 
+        1.        Container image
+        •        Base = Open Liberty (kernel + JRE 17)
+        •        Copy a JAR called hello-liberty.jar into the apps/ folder.
+        •        Tag & push to <your-hub>/hello-liberty:1.0.
+        2.        Namespace & quotas
+        •        Create a namespace called demo-simple.
+        •        Add a ResourceQuota → max 5 pods, 1 vCPU, 1 GiB memory.
+        •        Add a LimitRange → default container limit 250 m CPU / 256 Mi RAM.
+        3.        ConfigMap
+        •        Key APP_GREETING → value “Hello Manyata!”.
+        4.        Deployment
+        •        Name: hello-liberty.
+        •        Replicas: 1.
+        •        Container: use your pushed image; pull policy IfNotPresent.
+        •        Inject APP_GREETING from the ConfigMap.
+        •        Expose port 9080.
+        •        Readiness probe → GET /health/ready on 9080 (initial delay 5 s).
+        •        Liveness probe → GET /health/live on 9080 (initial delay 10 s).
+        5.        Service
+        •        Cluster-internal ClusterIP named hello-svc on port 80 → 9080.
+        6.        Validation
+        •        Pod is Running and Ready.
+        •        curl via kubectl port-forward returns the greeting JSON/text.
+
+
+=========
+
+
+Task  2 – Orders-API  ( use same jar as above to create Dockerfile ) 
+
+Context:
+Deploy an “orders” micro-service that writes audit logs to a persistent volume and scales with CPU load. 
+A sidecar should tail the logs.
+
+Requirements
+        1.        Container image
+        •        Base = Open Liberty (kernel-slim, JRE 17).
+        •        Copy orders-api.jar to apps/.
+        •        Create directory /logs (owned by UID 1001).
+        •        Tag & push as <your-hub>/orders-api:1.0.
+        2.        Namespace --Use demo-orders.
+        3.        Persistent storage
+        •        Dynamic StorageClass standard (use cluster default if it exists).
+        •        PVC orders-logs requesting 1 GiB, ReadWriteOnce.
+        4.        Deployment
+        •        Name: orders-api.
+        •        Volumes: mount orders-logs at /logs.
+        •        Main container: requests 250 m CPU / 512 Mi, limits 500 m / 1 Gi.
+        •        Sidecar fluent-bit image; tail /logs/orders.log and output to stdout.
+        •        Probes:
+        •        Liveness → GET /health/live (delay 15 s)
+        •        Readiness → GET /health/ready (delay 8 s)
+        5.        Service
+        •        ClusterIP orders-svc, port 80 → 9080.
+        6.        HorizontalPodAutoscaler
+        •        Target: orders-api deployment.
+        •        Scale 1 → 4 replicas when average CPU > 60 %.
+        7.        Validation
+        
+        
+        •        PVC bound and mounted.
+        •        Generate load (hey, ab) → HPA scales above 1 pod.
+        •        kubectl logs for sidecar shows tail of /logs/orders.log.
+===================

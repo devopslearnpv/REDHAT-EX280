@@ -1,0 +1,1308 @@
+Welcome to OpenDev Etherpad!
+
+This pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!
+
+OpenDev: https://opendev.org
+Etherpad on Github: https://github.com/ether/etherpad-lite
+
+Docker : 
+Step 1 - Install docker 
+Step 2 - Understand the container images 
+Step 3 - Practice Docker commands
+Step 4 - Build the container image using Dockerfile
+Step 5 - Push to registry and use it 
+
+——————
+Docker container engine Packages :
+- docker.io.  ( specific package for ubuntu / debian ) 
+- docker.ee. ( enterprise edition - Licensed ) 
+- docker.ce  ( community edition - Free ) 
+
+
+Container Registry : 
+- Dockerhub
+
+—> sudo su - 
+
+—> apt update
+apt : tool to install/uninstall/update package
+Update : update package information 
+
+—> apt install docker.io
+
+—> docker ps
+
+—> docker start
+—> docker stop
+—> docker restart
+—> docker kill
+—> docker images
+—> docker rmi
+—> docker rm
+—> docker run
+—> docker ps
+—> docker ps -a
+—> docker ps —filter status=exited
+—> docker save
+—> docker load
+—> docker export
+—> docker import
+—> docker pull
+—> docker push
+—> docker login
+
+—> docker build 
+
+Dockerfile
+
+—> sudo apt update
+—> sudo apt install docker.io
+
+—> docker info
+
+—> docker run 
+# Create and run a new container from an image
+
+—> docker run —help
+
+—> docker run -p 90:80 -d nginx
+Run : create and run a container 
+-p : publish the container port 8080 to host port 9090
+-d : detached mode / run the container in background
+Nginx : container image
+Hostport : it can be in the range of 80 to 65000 / can be changed
+Containerport: will be the default container image port
+
+
+—> docker run -p 91:80 -d httpd
+—> docker run -p 91:80 -d httpd
+## this will throw error , as there will be a port conflict on port 91
+## always use unique hostport
+
+—> docker run -p 92:8080 -d quay.io/wildfly/wildfly
+
+—> docker run -p 9091:8080 -d pengbai/docker-supermario
+—> docker run -d nginx
+
+—> docker images
+
+—> docker ps
+—> docker ps —filter status=exited
+—> docker start $(docker ps —filter status=exited)
+
+
+—> sudo usermod -aG docker <your-username>
+## add your username to docker group , so you need not use sudo infront of docker command
+
+
+—> docker run -p 8081:8080 -d jenkins/jenkins
+—> docker ps 
+ 
+—> docker run -d mysql
+—> docker ps -l
+—> docker logs <container-id>
+—> docker logs —-tail <container-id>
+
+—> docker run -d mysql --help
+—> docker run --help
+
+—> docker run -e MYSQL_ROOT_PASSWORD=redhat123 -d mysql 
+## e: environment variable 
+
+—> docker ps -l
+—> docker ps
+—> docker run -e MYSQL_ROOT_PASSWORD=windows123 -d mysql 
+—> docker ps 
+
+Open Liberty (free):
+
+docker run -d -p 9080:9080 openliberty/open-liberty
+
+WebSphere Liberty (licensed via IBM):
+
+docker run -d -p 9080:9080 ibmcom/websphere-liberty:kernel-java11-openj9
+
+————————————
+
+## To create a websphere liberty with admin console , use below steps 
+
+Step 1 - Create a server.xml file and copy paste below lines 
+—> vi server.xml
+
+<server description="Liberty server with adminCenter">
+    <featureManager>
+        <feature>adminCenter-1.0</feature>
+        <feature>servlet-4.0</feature>
+        <feature>ssl-1.0</feature>
+    </featureManager>
+
+    <httpEndpoint id="defaultHttpEndpoint"
+                  host="*"
+                  httpPort="9080"
+                  httpsPort="9443" />
+
+    <keyStore id="defaultKeyStore" password="Liberty123"/>
+</server>
+
+
+
+Step 2 - Create a Dockerfile and copy paste below steps
+vi Dockerfile
+FROM icr.io/appcafe/websphere-liberty:kernel-java11-openj9-ubi
+RUN features.sh --acceptLicense adminCenter-1.0
+COPY server.xml /config/
+
+Step 3 - Build the container image 
+--> docker pull icr.io/appcafe/websphere-liberty:kernel-java11-openj9-ubi
+—> docker build -t my-liberty-admin-v1 .
+—> docker run -d -p 9080:9080 -p 9444:9443 my-liberty-admin-v1
+--> docker ps -l
+
+Access admin center at:
+https://<GCP-VM-External-ip:9444/adminCenter
+
+http://<GCP-VM-External-ip:9085/adminCenter
+
+https://www.ibm.com/docs/en/was-liberty/base?topic=center-setting-up-admin
+
+
+--------------
+
+## Edit the container image 
+## webserver will ahve index.html by default . The default port number of webserver will be 80 
+## nginx , ibm http server, MS IIS, httpd 
+Step 1 - Create a container using nginx container image from docker hub [ docker run ]
+Step 2 - Entered inside the container to make modifications [ docker exec ]
+Step 3 - Navigate to index.html file and make a modification [ echo welcome > index.html ]
+Step 4 - Exit from the container and create a new image from the container’s changes [ docker commit ]
+—> docker run -p 90:80 -d nginx
+—> docker ps
+—> docker exec -it <nginx-container-id> bash
+      cd /usr/share/nginx/html
+     echo welcome-to-kyndrl > index.html
+    exit 
+—> docker commit <modified-container-id>  <new-image-name>
+—> docker images
+
+## Push the container image from local to container registry : Dockerhub
+
+## Pre-requisite : Create a dockerhub account
+## Go to dockerhub website --> login --> My hub --> Create a Repository --> .give a repo name 
+## So Dockerhub account name will be your login-name , repo will the name which created inside Myhub
+## format of the container image must be :   registry-url/dockerhub-accountname/reponame/container-image
+## example :  docker.io/cubensquare/murugan-image
+
+--> docker tag <modified-container-image>  registry-url/dockerhub-accountname/image-name
+--> docker images
+--> docker login
+--> docker push <your-repo-name>/image-name
+
+Example : docker.io/cubensquare/murugan-image
+Example on docekr tag :   docker tag murugan-image docker.io/cubensquare/murugan-image
+
+## Docker stop command
+--> docker stop <container-id>
+
+## To remove a container 
+--> docker rm <container-id>
+
+## To remove a container image
+--> docker images
+--> docker rmi <image-id>
+
+## To enable the service on docker , so that when the VM reboots, the docker conrtianer will start automatically 
+--> docker  run --restart always -d httpd
+
+## To know the history of contianer images 
+--> docker history <image-id>
+
+## Export a container's filesystem as a tar archive
+--> docker export 
+--> docker export --help
+--> docker export -o mycontainer-backup.tar  container_ID
+--> ls -lrt mycontainer-backup.tar
+
+## Import the contents from a tarball to create a filesystem image
+--> docker import
+--> docker import mycontainer-backup.tar myimage
+--> docker images
+--> docker images
+
+## Save one or more images to a tar archive
+--> docker save 
+--> docker save --help
+--> docker save -o myimage.tar  <container-image-id>
+
+## Load an image from a tar archive
+--> docker load -i myimage.tar 
+--> docker load --help
+
+
+
+
+—> Dockerfile
+## Name of the file is Dockerfile
+## if we wanted to create a customised image , we create a Dockerfile and customize
+## there is no extension for this file
+## the first letter starts with capital ‘D’
+
+
+—> vi Dockerfile
+FROM
+RUN
+COPY
+ENV
+EXPOSE
+ADD
+WORKDIR
+ENTRYPOINT
+CMD
+USER
+
+
+Dockerfile
+
+⸻
+
+FROM
+Purpose: Defines the base image for your container.
+
+FROM python:3.9-slim
+
+This tells Docker:
+
+“Start with the official Python 3.9 slim image.”
+
+⸻
+ENV
+Purpose: Set environment variables in the container.
+
+ENV APP_ENV=production
+
+You can access it later in your app using:
+
+import os
+print(os.getenv("APP_ENV"))
+
+⸻
+WORKDIR
+Purpose: Set the working directory inside the container.
+
+WORKDIR /app
+
+All future commands (like COPY, RUN, etc.) will happen inside /app.
+
+⸻
+COPY
+Purpose: Copy files from your local machine into the image.
+
+COPY app.py /app/app.py
+
+COPY index.html /usr/share/nginx/html/
+
+⸻
+ADD
+Purpose: Copy files from your remote location  into the image.
+
+ADD https://github.com/mgsgoms/Docker-Project/blob/master/Jenkinsfile /app/
+
+⸻
+RUN
+Purpose: Run a command while building the image.
+
+RUN pip install flask
+
+This is executed during build, not when container runs.
+
+⸻
+
+/opt/jboss/wildfly/bin/domain.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+
+FROM wildfly/wildfly
+CMD [ “/opt/jboss/wildfly/bin/domain.sh” “-b 0.0.0.0” “-bmanagement 0.0.0.0”]
+
+CMD 
+ CMD
+Purpose: Provide default command to run when the container starts.
+
+CMD ["python", "app.py"]
+
+        •        It can be overridden at runtime:
+docker run my-image python another-script.py
+
+
+Python another-script.py
+⸻
+
+ENTRYPOINT [“/opt/jboss/wildfly/bin/domain.sh”] 
+CMD [“-b 0.0.0.0” “-bmanagement 0.0.0.0”]
+
+ENTRYPOINT
+Purpose: Set the fixed command that always runs.
+
+ENTRYPOINT ["python"]
+CMD ["app.py"]
+
+When you run:
+docker run my-image
+
+It runs:
+python app.py
+
+If you run:
+docker run my-image script2.py
+
+It runs:
+python script2.py
+
+ENTRYPOINT is fixed, CMD is a default argument to ENTRYPOINT.
+
+⸻
+
+CMD vs ENTRYPOINT
+
+➤ Dockerfile with CMD only:
+
+FROM python:3.9
+COPY app.py .
+CMD ["python", "app.py"]
+
+        •        You can override this at runtime:
+
+docker run my-image python script2.py
+
+➤ Dockerfile with ENTRYPOINT + CMD:
+
+FROM python:3.9
+COPY app.py .
+ENTRYPOINT ["python"]
+CMD ["app.py"]
+
+        •        You can override just the argument:
+
+docker run my-image script2.py
+
+It becomes python script2.py
+
+⸻
+
+EXPOSE
+Purpose: Inform Docker that the app inside listens on a specific port.
+
+EXPOSE 5000
+
+It doesn’t publish the port, but documents it.
+
+⸻
+
+LABEL
+Purpose: Add metadata.
+LABEL maintainer="goms@cubensquare.com”
+
+
+⸻
+
+Steps on your windows or Linux : 
+Objective : Create a simple python script
+Step 1 - Install Python
+Step 2 - Install all the required modules [ Flask , render_template, request etc]
+Step 3 - Write your python script [ app.py ]
+Step 4 - Execute the python script 
+
+
+ Simple Dockerfile Example:
+
+FROM python:3.9-slim
+
+ENV APP_ENV=production
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+ENTRYPOINT ["python"]
+CMD ["app.py"]
+
+EXPOSE 5000
+
+LABEL description="Flask App with CMD and ENTRYPOINT"
+
+
+⸻
+
+
+
+
+FROM        :         Base image
+ENV                :        Set environment variable
+WORKDIR:         Set working directory
+COPY        :        Copy files from local machine to container image location
+ADD                :        Copy file from remote location to container image location 
+RUN                :        Run a command during build
+CMD                :        Default command (can be overridden)
+ENTRYPOINT        : Always runs (base command)
+EXPOSE        :         Document exposed port
+LABEL        :        Add metadata
+
+———————————
+
+
+Dockerfile – Hello World (Static File)
+
+—> mkdir hello-world
+—> cd hello-world
+—> vi  index.html
+
+<h1>Hello from Docker!</h1>
+
+—> vi Dockerfile:
+
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+
+
+
+—> docker build -t hello-docker .
+—> docker run -d -p 8080:80 hello-docker
+
+Visit: http://<gcp-externalvmip:8080
+
+⸻
+
+Python Flask App (No DB)
+
+—> cd ~
+—> mkdir python-app 
+—> cd python-app
+—> vi app.py
+
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return "Hello from Flask inside Docker!"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+—> vi requirements.txt
+
+  flask
+
+—> vi Dockerfile
+
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]
+
+
+
+—> docker build -t flask-app .
+—> docker run -d -p 5000:5000 flask-app
+
+Visit: http://gcp-external-vm-ip:5000
+
+⸻
+
+Python Flask App + MySQL
+
+
+—> cd ~
+—> mkdir flask-mysql
+—> cd flask-mysql
+—> vi app.py
+
+from flask import Flask
+import mysql.connector
+
+app = Flask(__name__)
+
+@app.route('/')
+def connect_db():
+    try:
+        conn = mysql.connector.connect(
+            host=‘mysql’,
+            user='root',
+            password='rootpassword',
+            database='testdb'
+        )
+        cursor = conn.cursor()
+        cursor.execute("SELECT NOW()")
+        result = cursor.fetchone()
+        return f"MySQL Connected! Current time: {result[0]}"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+—> vi requirements.txt
+
+flask
+mysql-connector-python
+
+—> vi Dockerfile
+
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]
+
+
+
+Start MySQL container:
+
+docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=testdb -p 3306:3306 mysql:5.7
+
+
+Wait a few seconds for MySQL to initialize.
+
+⸻
+
+Build and Run Flask App:
+
+—> docker build -t flask-mysql-app .
+—> docker run -d -p 5000:5000 flask-mysql-app
+
+
+=======================================================================================
+K8S Objects :
+    - Node
+    - Pod
+    - Deployment
+    - Replicaset
+    - Service
+ 
+
+Master Components :
+    - API Server ( Pod ) 
+    - Controller ( Pod ) 
+    - Scheduler ( Pod ) 
+    - Etcd. ( Pod ) 
+    - Kubelet  ( Service ) 
+    - Kube proxy
+    
+    Workernode Components :
+        - Kubelet
+        - Container Engine ( Containerd ) 
+        
+============================================================
+
+Yaml 
+- Yet another markup langugage
+- To create and updoate K8S Objects
+- Its a Key: Value pair
+- Extension of a yaml file must be .yaml or .yml
+
+
+
+--> vi pod.yaml
+
+kind: Pod
+apiVersion: v1
+metadata:
+    name: sbi-pod
+    labels:
+        app: sbi
+spec:
+    containers:
+    - name: testcontainer
+      image: nginx
+
+--> kubectl create -f pod.yaml
+--> kubectl get pods
+--> kubectl get pods sbi-pod -o yaml
+--> kubectl explain pod
+--> kubectl explain pod.spec
+--> kubectl explain pod.spec.containers
+
+
+Deployment : [ Deployment, Pod, Replicaset ]
+    
+--> vi deployment.yaml
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+      name: icici-deployment
+      labels:
+          dc: chennai
+spec:
+    selector:
+        matchLabels:
+            app: sbi
+    replicas: 2
+    template:
+        metadata:
+          name: sbi-pod
+          labels:
+             app: sbi
+        spec:
+         containers:
+         - name: testcontainer
+           image: nginx
+           resources:
+               requests:
+                   cpu: 100m
+                   memory: 100Mi
+               limits:
+                   cpu: 200m
+                   memory: 200Mi
+
+--> kubectl create -f deployment.yaml
+--> kubectl get deployment
+--> kubectl get deployment icici-deployment -o yaml
+--> kubectl get deployment icici-deployment -o yaml >  satheesh.yaml
+--> ls -lrt 
+
+--> kubectl describe deployment icici-deployment
+
+Service :
+    
+--> vi service.yaml
+
+kind: Service
+apiVersion: v1
+metadata:
+    name: myservice-v1
+    labels:
+        app: icici
+spec:
+  selector:
+      app: sbi
+   type: NodePort  
+   ports:
+   - port: 80
+     targetPort: 80
+
+--> kubectl create -f service.yaml
+--> kubectl get service
+--> kubectl get service myservice-v1 -o yaml
+
+
+
+----------
+
+Resources : CPU , Memory, Storage
+
+-------
+NodeSelector :
+Step 1 - Assign a label for the node
+Step 2 - Mention the nodeselector in the deployment
+
+Taint : Block the node 
+
+Taint effect : 
+    NoSchedule :  
+    NoExecute  : 
+
+-------------------------------------------------------
+16-June-2025
+
+Node Maintenance : 
+
+Cordon :  Disabling the scheduling 
+--> kubectl cordon <node-name>
+--> kubectl get nodes
+
+Uncordon : Enable the scheduling
+--> kubectl uncordon <node-name>
+--> kubectl get nodes
+
+
+Taint & Tolerations :
+
+Update the taints on one or more nodes.
+
+  *  A taint consists of a key, value, and effect. As an argument here, it is expressed as key=value:effect.
+  *  The key must begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to
+253 characters.
+  *  Optionally, the key can begin with a DNS subdomain prefix and a single '/', like example.com/my-app.
+  *  The value is optional. If given, it must begin with a letter or number, and may contain letters, numbers, hyphens,
+dots, and underscores, up to 63 characters.
+  *  The effect must be NoSchedule, PreferNoSchedule or NoExecute.
+  *  Currently taint can only apply to node.
+
+Examples:
+  # Update node 'foo' with a taint with key 'dedicated' and value 'special-user' and effect 'NoSchedule'
+  # If a taint with that key and effect already exists, its value is replaced as specified
+  kubectl taint nodes foo dedicated=special-user:NoSchedule
+  
+  # Remove from node 'foo' the taint with key 'dedicated' and effect 'NoSchedule' if one exists
+  kubectl taint nodes foo dedicated:NoSchedule-
+  
+  --> kubectl get nodes
+  --> kubectl taint --help
+  --> kubectl taint node <node-name>  app=aiml:NoExecute
+  --> kubectl get nodes
+  --> kubectl describe node <workernode-which-was-tainted>
+  ## Describe command will show the tainted values 
+  --> kubectl describe node <worker-node-which-was-tainted> | grep -i taint 
+  
+  Tolerations :
+  - If you want the POD to run on the tainted node , use the tolerations config inside your deployment.yaml
+
+  
+  --> vi deployment-taint.yaml
+  
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+      name: cancer-aiml-app
+      labels:
+          dc: chennai
+spec:
+    selector:
+        matchLabels:
+            app: sbi
+    replicas: 2
+    template:
+        metadata:
+          name: sbi-pod
+          labels:
+             app: sbi
+        spec:
+         nodeSelector:
+           app: aiml
+         tolerations:
+         - key: app
+           value: aiml
+           effect: NoExecute
+         containers:
+         - name: testcontainer
+           image: nginx
+           
+--> kubectl apply  -f deployment-taint.yaml
+--> kubectl get pods -o wide 
+
+## You can see that the POD will run on the tainted node . 
+## If you do not have toleration, the POD cannot run on the tainted node 
+
+## To untaint the node use below command. Use the same taint command and at the end use '-' 
+
+--> kubectl taint node <node-name>  app=aiml:NoExecute-
+
+
+------------------------------------------------------------------------------------------------------------------
+
+NodeSelector :
+## When you want the POD to run on the specific selected node , use nodeselector config in the deployment.yaml
+## Step 1 - create a label for the node first and then use the nodeselector config
+
+--> kubectl label node  <node-name> app=aiml
+--> kubectl describe node <node-name>
+--> kubectl get nodes --show-labels
+
+
+
+--> vi  nodeselector.yaml 
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+      name: nodeselector-example
+      labels:
+          dc: chennai
+spec:
+    selector:
+        matchLabels:
+            app: sbi
+    replicas: 2
+    template:
+        metadata:
+          name: sbi-pod
+          labels:
+             app: sbi
+        spec:
+         nodeSelector:
+           app: aiml
+         tolerations:
+         - key: app
+           value: aiml
+           effect: NoExecute
+         containers:
+         - name: testcontainer
+           image: nginx
+
+
+--> kubectl apply -f nodeselector.yaml 
+--> kubectl get pods -o wide
+
+## You can see that the POD will run only on the specific node with the label 
+
+------------------------------------------------------------------------------------------------------------------
+
+17-Jun-2025
+
+Daemonset :
+    DaemonSet represents the configuration of a daemon set
+    
+
+vi daemonset.yaml
+
+Namespace : 
+—> kubectl create namespace dev
+—> kubectl describe namespace dev
+—> kubectl get namespace
+
+Resource quota :
+
+—> kubectl create quota —help
+—> kubectl create quota myquota —hard=cpu=1,memory=1G,pods=3,services=3
+—> kubectl get resourcequota
+—> kubectl describe ns dev
+
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+      name: monitoring-da
+      labels:
+          dc: chennai
+spec:
+    selector:
+      matchLabels:
+        app: sbi
+    template:
+        metadata:
+          name: sbi-pod
+          labels:
+             app: sbi
+        spec:
+         containers:
+         - name: testcontainer
+           image: nginx
+           resources:
+               requests:
+                   cpu: 100m
+                   memory: 100Mi
+               limits:
+                   cpu: 200m
+                   memory: 200Mi
+                   
+                   
+--> kubectl apply -f daemonset.yaml
+--> kubectl get pods -o wide
+
+----------------------------------
+
+Drain : During maintenance , to evict all the PODs from one node and have the PODs created/scheduled in next available node
+    
+    
+    --> kubectl drain --help
+    --> kubectl drain <node-name> 
+    --> kubectl drain <node-name> --force --ignore-daemonsets
+    --> kubectl get nodes
+    --> kubectl get pods -o wide
+    
+    ## You will see that all the PODs will get scheduled in next available nodes ( all pods with controller ) 
+    
+    
+  
+
+  ----------------------------------
+  
+  Kubernetes :
+  - Container orchestration tool
+  - to manage the containers
+  - opensource 
+  - Can be installed on Linux distributions
+  - Products :  Minikube ( standalone node ) , Multi Node cluster 
+  
+  - Setup of K8S multi node cluster 
+  - 3 VMS in GCP [  k8s-controlpane, workernode-1 , workernode-2 ]
+  - Master components [ API server, ETCD, Scheduler, Controller, Kubelet, Kube-proxy ]
+  - Worker nodes [ ContainerD, kubelet ]
+  
+  - Kubernetes objects 
+    Node
+    POD
+    Deployment [ Pod , Deployment, Replicaset ]
+    Replicaset
+    Service [ three service types : NodePort, ClusterIP , Loadbalancer
+    
+    Managing Kubernetes using :
+    - Interactive : kubectl
+    - Declarative : Yaml
+    
+    Node Maintenance :
+   - Cordon, Uncordon [ Enable scheduling , Disable scheduling ]
+   - Taint & Toleration  [ Taint = Block the node , to have the certaint category of application running on that node . Example : by default master is tainted , so the master compoentns alone run in master node . Toleration : If you want the certain application to run on the tainted node, have the tolerations values mention in your deployment.yaml 
+    - NodeSelector
+    - Daemonset [ one node / one poD .. when you deploy an application using daemonset, one POD will get scheduled on each node ]
+    - Drain [ For node maintenance purpose we do drain , so that the POD running on that node will get evicted and get reschduled on other available nodes ]
+    
+    18-June-2025
+
+Namespace:
+—> kubectl create namespace dev
+—> kubectl describe namespace dev
+—> kubectl get namespace
+Resource quota :
+
+—> kubectl create quota —help
+—> kubectl create quota myquota -—hard=cpu=1,memory=1G,pods=3,services=3
+—> kubectl get resourcequota
+—> kubectl describe ns dev
+
+
+--> vi limits.yaml
+
+apiVersion: "v1"
+kind: "LimitRange"
+metadata:
+  name: "dev-limits"
+spec:
+  limits:
+    - type: "Pod"
+      max:
+        cpu: "500m"
+        memory: "750Mi"
+      min:
+        cpu: "10m"
+        memory: "5Mi"
+    - type: "Container"
+      max:
+         cpu: "500m"
+         memory: "750Mi"
+      min:
+         cpu: "10m"
+         memory: "5Mi"
+      default:
+         cpu: "100m"
+         memory: "100Mi"
+      defaultRequest:
+         cpu: "20m"
+         memory: "20Mi"
+
+
+--> kubectl create -f limits.yaml
+--> kubectl get limits
+--> kubectl describe ns dev
+
+=============
+
+
+Ansible : 
+    
+Install ansible on control node :
+—> sudo apt install ansible
+—> sudo adduser ansible
+## give a password 
+
+—> sudo vi /etc/sudoers
+
+   ansible ALL=(ALL) NOPASSWD: ALL
+
+—> su - ansible
+—> ssh-keygen
+
+—> cat ~/.ssh/id_rsa.pub
+## this will display the ssh key 
+
+Managed node :
+```````````````````
+—> sudo adduser ansible
+—> sudo vi /etc/sudoers
+
+   ansible ALL=(ALL) NOPASSWD: ALL
+—> sudo su - ansible
+—> mkdir -p ~/.ssh
+—> chmod 700 ~/.ssh
+—> nano ~/.ssh/authorized_keys
+
+## paste the ssh key from control node 
+—> chmod 600 ~/.ssh/authorized_keys
+
+Control node :
+````````````````
+
+—> vi /etc/ansible/hosts
+### add the managed hosts internal ip address or hostname
+
+
+—> ansible all -m ping
+
+## ansible : CLI , ad-hoc commands
+## all : host pattern
+## m : module
+## ping : one of the module , to check the tcpip connection
+
+————  
+Inventory :
+- static inventory
+- dynamic inventory 
+
+—> ansible all -m ping -I hosts 
+
+## Create a user called goms 
+
+—> ansible all -m user -a 'name=goms state=present' -i hosts -b
+- ansible : adhoc command
+- all : all the hostnames inside hosts file
+- m : module
+- user: user module
+- a : argument
+- I : inventory
+- -b : sudo 
+
+
+## Remove a user called goms 
+—> ansible all -m user -a 'name=goms state=absent’ -i hosts -b
+
+Ansible Playbook :
+- set of instructions in yaml format
+- extension must be .yaml or yaml
+
+—> vi user.yaml
+---
+ - name: create a user
+    hosts: all
+    become: true
+    tasks:
+    - name: Create a user 'johnd' with a home directory
+    ansible.builtin.user:
+      name: johnd
+
+
+—> ansible-playbook user.yaml --syntax-check 
+—> ansible-playbook user.yaml -vvvv -i hosts
+   
+   ==========================
+   28/07/2025
+   
+## Install webserver 
+
+   —> vi apache2.yaml
+
+---
+- name: Install a webserver
+  hosts: all
+  become: true
+  tasks:
+    - name: Install apache2 httpd (state=present is optional)
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+
+    - name: Start service apache2, if not started
+      ansible.builtin.service:
+        name: apache2
+        state: started
+
+    - name: Enable service apache2, and not touch the state
+      ansible.builtin.service:
+        name: apache2
+        enabled: yes
+
+
+—> ansible-playbook apache2.yaml ---syntax-check -i hosts
+—> ansible-playbook apache2.yaml -i hosts -vvvv 
+
+—————————
+ 
+## TO uninstall apache2 package 
+
+
+—> vi apache2-uninstall.yaml
+
+---
+- name: Uninstall apache2 package
+  hosts: all
+  become: true
+  tasks:
+    - name: Uninstall apache2 httpd
+      ansible.builtin.apt:
+        name: apache2
+        state: absent
+
+—> ansible-playbook apache2-uninstall.yaml —-syntax-check -i hosts
+—> ansible-playbook apache2-uninstall.yaml --i hosts -vvvv 
+
+--------------
+## Copy the Dockerfile from source / ansible control plan to managed nodes
+
+—> vi Dockerfile
+FROM nginx
+RUN apt update
+
+
+—> vi copy.yaml
+
+---
+- name: copy a Dockerfile to build
+   hosts: all
+   become: true
+   tasks:
+   - name: Copy file with owner and permissions
+    ansible.builtin.copy:
+     src: /home/ansible/automation/Dockerfile
+     dest: /home/ansible/
+
+—> ansible-playbook copy.yaml —-syntax-check -i hosts
+—> ansible-playbook copy.yaml  -i hosts
+
+==============================
+
+## Build the container image 
+
+https://docs.ansible.com/ansible/latest/collections/community/docker/docker_image_module.html#ansible-collections-community-docker-docker-image-module
+
+—> vi docker-build-module.yaml
+
+---
+- name: Build a container image
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is started and enabled
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install python3-pip (required for Docker SDK)
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install Docker SDK for Python
+      ansible.builtin.pip:
+        name: docker
+        state: present
+        # Add this line to bypass the "externally-managed-environment" error
+        extra_args: --break-system-packages
+
+    - name: Build an image
+      community.docker.docker_image:
+        build:
+          path: /home/ansible
+        name: "<your-dockerhub-accountname>/goms-image:latest"
+        source: build
+        state: present
+      
+      
+      --> ansible-playbook docker-build-module.yaml --syntax-check -i hosts
+     --> ansible-playbook docker-build-module.yaml  -i hosts -vvvv
+     
+     =============================================
+     
+     —> vi docker build-module.yaml
+---
+- name: Build a container image
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is started and enabled
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install python3-pip (required for Docker SDK)
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install Docker SDK for Python
+      ansible.builtin.pip:
+        name: docker
+        state: present
+        # Add this line to bypass the "externally-managed-environment" error
+        extra_args: --break-system-packages
+
+    - name: Build an image
+      community.docker.docker_image:
+        build:
+          path: /home/ansible
+        name: "<your-dockerhub-accountname>/goms-image:latest"
+        source: build
+        state: present
+
+—> secret.yaml
+username: <yourdockerhub-username>
+password: <yourdockerhub-password>
+
+—> ansible-vault encrypt secret.yaml
+
+—> vi login.yaml
+
+---
+- name: dockerlogin
+  hosts: all
+  become: true
+  vars_files:
+     secret.yaml
+  tasks:
+  - name: Log into DockerHub {{ username }}
+   community.docker.docker_login:
+     username: “{{ username }}”
+     password: “{{ password }}”
+
+
+—> ansible-playbook docker-login.yaml -i hosts
+—> ansible-playbook docker-login.yaml -i hosts --ask-vault-pass
+
+
+—> vi docker-push.yaml
+---
+- name: Build a container image
+  hosts: all
+  become: true
+  tasks:
+      - name: Build an image
+        community.docker.docker_image:
+         build:
+          path: /home/ansible
+         name: "<your-dockerhub-accountname>/goms-image:latest"
+         source: build
+         push: yes
+         state: present
+
+—> ansible-playbook docker-push.yaml -vvvv
+
+
+Summarise :
+- Ansible 
+- Installing apache2 webserver  [ Module name: apt ]
+- Start the apache2 service.  [ Module name: service ]
+- Enable the apache2 service. [ Module name: service ]
+- Uninstall apache2 service. [ Module : apt ]
+- Install docker.io. [ Module apt , state: present ]
+- Install python3. [ Module : apt , state: present ]
+- install docker sdk. [ Module: pip ]
+- Copy Dockerfile. [ Module: copy , Parameter : src, dest ]
+- Build the container image [ Module: command, Module: docker_image ]
+- Docker login with ansible-vault. [ Module: docker_login , ansible-vault : create, encrypt,decret,view ]
+- Secret [ it refers it ansible-vault , to store sensitive information as encryption ]
+- Docker push [ Module: docker_image , parameter : push : yes ]
+
+
+——————
+
+     
+     
+     

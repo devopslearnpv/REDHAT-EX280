@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+ 
+    environment {
+REGISTRY = "docker.io/prashanthvedarathna/flask"
+        TAG = "${BUILD_NUMBER}"
+    }
+ 
+    stages {
+        stage('Checkout Code') {
+            steps {
+git 'https://github.com/mgsgoms/Docker-Project.git'
+            }
+        }
+ 
+        stage('Build Docker Image') {
+            steps {
+                script {
+docker.build("${env.REGISTRY}:${env.TAG}")
+                }
+            }
+        }
+ 
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('', 'dockerhub-credentials') {
+                        docker.image("${env.REGISTRY}:${env.TAG}").push()
+                        docker.image("${env.REGISTRY}:${env.TAG}").push("latest")
+                    }
+                }
+            }
+        }
+ 
+        stage('Print MySQL Path') {
+            steps {
+                dir("${env.WORKSPACE}/mysql") {
+                    sh 'pwd'
+                }
+            }
+        }
+ 
+        stage('Build MySQL Image') {
+            steps {
+sh "docker build -t docker.io/prashanthvedarathna/mysql_sam:${env.TAG} ${env.WORKSPACE}/mysql"
+sh "docker push docker.io/prashanthvedarathna/mysql_sam:${env.TAG}"
+            }
+        }
+ 
+        stage('Deploy App') {
+            steps {
+                script {
+                    kubernetesDeploy(
+                        configs: "frontend.yaml",
+                        kubeconfigId: "kube"
+                    )
+                }
+            }
+        }
+    }
+ 
+    post {
+        always {
+            echo "✅ Pipeline finished. Docker Image: ${env.REGISTRY}:${env.TAG}"
+        }
+    }
+}

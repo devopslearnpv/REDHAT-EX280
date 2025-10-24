@@ -1,0 +1,116 @@
+PV , PVC - NFS Example :
+
+- Install and configure an NFS server
+- Install NFS clients on Kubernetes worker nodes
+- Create PV, PVC, and a Deployment that uses the NFS volume
+- Validate everything
+
+Create a new VM in GCP :
+
+1. Setup NFS Server
+
+# On NFS Server
+sudo apt update
+sudo apt install -y nfs-kernel-server
+
+# Create shared folder
+sudo mkdir -p /srv/nfs/data
+sudo chown nobody:nogroup /srv/nfs/data
+sudo chmod 777 /srv/nfs/data
+
+# Export it
+--> vi /etc/exports
+
+/srv/nfs/data  *(rw,sync,no_subtree_check,no_root_squash)
+
+## save above file and then run below command
+
+## r : re-export , a : all , v : verbose
+sudo exportfs -rav
+
+2. Install NFS Client on ALL Kubernetes Worker Nodes
+# On each worker node
+sudo apt update
+sudo apt install -y nfs-common
+
+ 3. Kubernetes YAMLs for NFS
+
+—> vi pv-nfs.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  storageClassName: goms-nfs
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: <your server-ip>
+    path: /srv/nfs/data
+
+—> vi pvc-nfs.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  storageClassName: goms-nfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi
+
+
+—> vi deployment-nfs.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-app
+  template:
+    metadata:
+      labels:
+        app: nfs-app
+    spec:
+      containers:
+        - name: web
+          image: nginx
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: nfs-volume
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+
+
+
+—> kubectl apply -f pv-nfs.yaml
+—> kubectl apply -f pvc-nfs.yaml
+—> kubectl apply -f deployment-nfs.yaml
+
+## Validation 
+—> kubectl get pvc
+—> kubectl get pv
+—> kubectl get pods -l app=nfs-app
+
+## Enter the Pod and create a file
+—> kubectl exec -it deploy/nfs-demo -- /bin/bash
+      cd /usr/share/nginx/html
+      echo “Vanakkam from CubenSquare” > index.html
+      exit
+
+## Check from NFS server
+—> cat /srv/nfs/data/index.html
+# Output should be: Vanakkam from CubenSquare

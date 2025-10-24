@@ -1,0 +1,148 @@
+Perfect 🚀 For EX280, you’ll often need to write YAML from memory (since no internet/docs in exam).
+Here’s a one-page must-remember YAML template pack for the most common objects:
+
+📄 Must-Remember YAML Templates for EX280
+1. Pod (with ConfigMap, Secret, PVC)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+  labels:
+    app: myapp
+spec:
+  serviceAccountName: mysa
+  containers:
+  - name: myctr
+    image: quay.io/openshift/hello-openshift
+    ports:
+    - containerPort: 8080
+    envFrom:
+    - configMapRef:
+        name: myconfig
+    - secretRef:
+        name: mysecret
+    volumeMounts:
+    - name: data
+      mountPath: /opt/data
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: mypvc
+
+2. Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myctr
+        image: quay.io/openshift/hello-openshift
+        ports:
+        - containerPort: 8080
+
+3. Service (ClusterIP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-svc
+spec:
+  selector:
+    app: myapp
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+4. Route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: myapp-route
+spec:
+  to:
+    kind: Service
+    name: myapp-svc
+  port:
+    targetPort: 8080
+
+5. PersistentVolumeClaim (PVC)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+
+6. ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myconfig
+data:
+  APP_MODE: "production"
+  APP_PORT: "8080"
+
+7. Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+stringData:
+  DB_USER: admin
+  DB_PASS: redhat
+
+8. NetworkPolicy (deny all except same namespace)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-other-ns
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {}
+
+9. ResourceQuota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: myquota
+spec:
+  hard:
+    pods: "5"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+
+10. LimitRange
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-limit
+spec:
+  limits:
+  - default:
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest:
+      cpu: 200m
+      memory: 256Mi
+    type: Container

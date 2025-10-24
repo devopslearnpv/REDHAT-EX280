@@ -1,0 +1,304 @@
+Great! Here's a complete breakdown for both tasks with commands and YAML manifests following Kubernetes and Docker best practices.
+ 
+ 
+---
+ 
+✅ Task 1: Hello Liberty Microservice
+
+Step 1- git clone https://github.com/cubensquare/tasks-kyn
+Step 2 - unzip and then Run maven command :   
+           cd tasks-kyn 
+           mvnw liberty: dev
+Step 3 - Start your Dockerfile .. jar file will be in target folder
+ 
+ 
+ 
+---
+ 
+2. Dockerfile for Hello Liberty
+ 
+# Dockerfile.hello-liberty
+FROM openliberty/open-liberty:kernel-slim-java17
+ 
+COPY hello-liberty.jar /config/apps/
+ 
+Build & Push
+ 
+docker build -f Dockerfile.helloworld -t prashanthvedarathna/hello-liberty:1.0 .
+docker push prashanthvedarathna/hello-liberty:1.0
+ 
+ 
+---
+ 
+3. Kubernetes Manifests for Hello Liberty
+ 
+Namespace & Quotas
+ 
+# demo-simple-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-simple
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: simple-quota
+  namespace: demo-simple
+spec:
+  hard:
+    pods: "5"
+    limits.cpu: "1"
+    limits.memory: 1Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: simple-limits
+  namespace: demo-simple
+spec:
+  limits:
+  - default:
+      cpu: 250m
+      memory: 256Mi
+    type: Container
+ 
+ConfigMap
+ 
+# hello-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-config
+  namespace: demo-simple
+data:
+  APP_GREETING: "Hello Manyata!"
+ 
+Deployment
+ 
+# hello-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-liberty
+  namespace: demo-simple
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-liberty
+  template:
+    metadata:
+      labels:
+        app: hello-liberty
+    spec:
+      containers:
+      - name: hello-liberty
+        image: <your-dockerhub>/hello-liberty:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        env:
+        - name: APP_GREETING
+          valueFrom:
+            configMapKeyRef:
+              name: hello-config
+              key: APP_GREETING
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9080
+          initialDelaySeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9080
+          initialDelaySeconds: 10
+ 
+Service
+ 
+# hello-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+  namespace: demo-simple
+spec:
+  type: ClusterIP
+  selector:
+    app: hello-liberty
+  ports:
+  - port: 80
+    targetPort: 9080
+ 
+ 
+---
+ 
+✅ Validation for Hello Liberty
+ 
+kubectl port-forward -n demo-simple deployment/hello-liberty 8080:9080
+curl http://localhost:8080
+ 
+ 
+---
+ 
+✅ Task 2: Orders API with Logs & Scaling
+ 
+1. Prepare JAR
+ 
+cp target/guide-rest-intro.jar orders-api.jar
+ 
+ 
+---
+ 
+2. Dockerfile for Orders API
+ 
+# Dockerfile.orders-api
+FROM openliberty/open-liberty:kernel-slim-java17
+ 
+RUN mkdir /logs && chown 1001:0 /logs
+COPY orders-api.jar /config/apps/
+ 
+Build & Push
+ 
+docker build -f Dockerfile.orders-api -t <your-dockerhub>/orders-api:1.0 .
+docker push <your-dockerhub>/orders-api:1.0
+ 
+ 
+---
+ 
+3. Kubernetes Manifests for Orders API
+ 
+Namespace
+ 
+# demo-orders-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-orders
+ 
+Persistent Volume Claim
+ 
+# orders-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: orders-logs
+  namespace: demo-orders
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+ 
+Deployment
+ 
+#  orders-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+  namespace: demo-orders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-api
+  template:
+    metadata:
+      labels:
+        app: orders-api
+    spec:
+      volumes:
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: orders-logs
+      containers:
+      - name: orders-api
+        image: <your-dockerhub>/orders-api:1.0
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /logs
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9080
+          initialDelaySeconds: 8
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9080
+          initialDelaySeconds: 15
+      - name: log-sidecar
+        image: fluent/fluent-bit
+        args: ["-i", "tail", "-p", "path=/logs/orders.log", "-o", "stdout"]
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /logs
+ 
+Service
+ 
+# orders-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-svc
+  namespace: demo-orders
+spec:
+  type: ClusterIP
+  selector:
+    app: orders-api
+  ports:
+  - port: 80
+    targetPort: 9080
+ 
+HPA (Horizontal Pod Autoscaler)
+ 
+# orders-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orders-hpa
+  namespace: demo-orders
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orders-api
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+ 
+ 
+---
+ 
+✅ Validation for Orders API
+ 
+# Check PVC is bound
+kubectl get pvc -n demo-orders
+ 
+# Simulate load
+hey -z 30s -c 10 http://<pod-IP>:9080
+ 
+# Check scaling
+kubectl get hpa -n demo-orders
+ 
+# View logs
+kubectl logs <pod-name> -c log-sidecar -n demo-orders
+ 

@@ -1,0 +1,607 @@
+wasadm password expaire
+--------------------------
+
+chage -l wasadm
+
+login
+ssh server name 
+pbrun su - wasadm
+ps -ef | grep java --checking the,dmgr,nodeagent,JVM
+
+ps -ef | grep -i wasadm
+cd /apps/WebSphere/AppServer-6.1/profiles/ndmUAT12/bin---dmgr -path
+cd /apps/WebSphere/AppServer-6.1/profiles/ManagedUAT12/bin--nodeagent path and jvm
+ps -ef | grep java >/workfs/Javarunning---Backup of dmgr, Nodeagent, jvm
+df -k----list 
+
+df -Th /users/wasadm/
+
+ps -ef | grep java | grep -v "\-D"
+
+cd workfs
+------------
+/apps/WebSphere/Profiles/wp_profile/bin/rc.was_stop 
+--------------------------------------------------------
+
+ps -ef | grep httpd---checking IHS running
+
+ps -ef | grep httpd >/workfs/IHSrunning-----taking backing
+
+ps -ef | grep java | grep -v "\-D"
+
+server OS type : uname
+
+
+liberty servers we have to use this syntax for switching wasadm
+pbrun su - wasadm -s /bin/bash
+
+df -k----list 
+cd workfs
+wzaqwa31:/workfs>cat IHSrunning(Name_backup)
+
+sudo su - wasadm------switch to wasadm fpr cloud servers
+
+cd /apps/WebSphere/AppServer-6.1/bin --------------> Auto script JVM startUp_COS1to8_AllJvms.sh . shutdown_COS1to8_AllJvms.sh
+
+stoping the services 
+
+1st stop
+JVM, 
+nodeagent,
+DMGR
+
+to start 
+DMGR
+nodeagent
+JVM
+
+how to stop JVM, nodeagent, and dmgr
+pbrun su - wasadm
+ps -ef | grep java
+cd /apps/WebSphere/AppServer-6.1/profiles/ManagedUAT12/bin----nodeagent and jvm path
+./stopServer.sh JVM_Name
+./stopNode.sh
+cd /apps/WebSphere/AppServer-6.1/profiles/ndmUAT12/bin ----dmgr path
+./stopManager.sh
+
+----------------------------------
+comeout from wasadm
+
+InteresT
+WasAS
+
+pbrun /apps/IBMIHS/IBMIHS-8.5/bin/apachectl -f /apps/IBMIHS/IBMIHS-8.5/conf/admin.conf -k stop----to stop 
+
+sudo /apps/WebSphere/IBMIHS-9.0/bin/apachectl -f /apps/conf/httpd-pdas.conf -k stop
+
+
+openssl pkcs12 -export -in IVVRevProxy-NP.pfx -out key.p12
+
+pbrun /workfs/go
+
+
+su - wasadm -s /bin/bash
+
+
+/apps/WebSphere/IBMIHS-9.0/bin/apachectl -f /apps/conf/httpd-parkinson-test.conf -k start
+
+globel security
+-----------------																			   
+						 
+https://www.ibm.com/support/pages/how-manually-disable-global-administrative-security-ibm-websphere-application-server-was
+----------------------------------------------------------------------------------------------------------------
+
+Zip the files
+--------------
+
+tar -cvf  appserver_bak.tar  AppServer_bak
+
+gzip oblog.log.20180807.*
+
+
+cp -rp AppServer-8.5 AppServer-8.5_backup20191211
+
+mv /tmp/econsult-dev2.kp.org/econsult-dev2.kp.org* .
+
+cp -rp econsult-dev2.kp.org* BK_27_Sep_2023
+
+Space issue:
+----------------
+du - sg *
+
+du -sm *
+
+$ du -sh *
+
+find . -xdev -type f -ls |awk '{print $7" "$8" "$9" "$10" "$11}'|sort -rn |head -50
+
+
+lsof /logs | grep del
+
+echo fileName > filename
+
+Copy command for .EAR file
+--------------
+
+scp file name @487860a@servername -tarserver :/tmp
+
+Issue fix depllyment not working
+---------------------------------------
+/apps/WebSphere/AppServer-7.0/profiles/ndmProd002ext/config/cells/ndmPROD002ext/cus and blas ---> inside same files
+
+Log file checking
+---------------
+
+																	  
+grep java.lang.OutOfMemoryError: SystemOut.log -----> OutOfMemoryError
+
+
+
+tail -100f system.out
+
+izaqwa13:/tmp
+
+grep opdashDB SystemOut.log
+Root login
+----------------
+pbrun /workfs/go
+
+
+Node Synchronization
+-----------------------------
+
+ ./syncNode.sh cskpcloudxp1011.cloud.kp.org 10003
+
+./addnode.sh czatwa1 10003 -startingport 11000											 
+
+Remove command
+------------------
+
+remove all folder rm -rf *
+
+$  pbrun rm /apps/netpoint/webgate_10.1.4.3.0.kpaths/access/oblix/logs/oblog.log.2017*
+
+pbrun rm /apps/netpoint/webgate_10.1.4.3.0.kpaths/access/oblix/logs/oblog.log.201802*
+
+pbrun rm /apps/netpoint/webgate_10.1.4.3.0.kpaths/access/oblix/logs/oblog.log.201802*
+
+Permission issue given
+----------------------------------
+pbrun /workfs/go
+
+su - wasadm -s /bin/bash		
+
+ pbrun chmod -R 755 /qadrop/carssavedoc/
+
+sudo chown wasadm:wasadm /apps/WebSphere/keys/nonmbrcarsws/*
+
+su - wasadm -s /bin/bash
+
+if root directory- perimissiom
+
+chown -R wasadm:wasadm /apps/keys/parkinson-Bk-24-APr-2020/*	
+
+pbrun chown -R wasadm:wasadm /workfs/	
+
+
+
+
+certficate checking
+-------------------
+Certificate passwords : changeit , 1nteresT	
+
+key.p12 passward : WebAS								   
+
+./gsk7cmd -cert -details -label pcpm.appl.kp.org -db /apps/keys/pcpm/pcpmkey.kdb
+./gskcapicmd -cert -list all -expiry 7000 -db /apps/keys/chats/ncmd.kdb
+
+cd /apps/IBMIHS/IBMIHS-8.5/bin/
+
+./gskcapicmd -cert -list all -expiry 7000 -db <kdb file path> 
+exp : /apps/WebSphere/IBMIHS-9.0/bin/gskcapicmd -cert -list all -expiry 7000 -db /apps/keys/npsstg/nps-stg.kdb 
+
+keystore password expiry checking :
+---------------------------------------
+
+/apps/WebSphere/IBMIHS-9.0/bin/gskcmd -keydb -expiry -db /apps/WebSphere/keys/prod/prod.kdb -pw 1nteresT
+
+DMZ-serevr
+---------------
+
+openssl x509 -text -noout -in certificate.crt
+cat /etc/httpd/conf.d/IVV.pem | openssl x509 -noout -enddate
+
+
+https://172.27.130.17:447/bigip/bigip.html
+-------------------------------------------------------------------------------------
+
+DMGR - password checking
+							  
+
+''/apps/WeBSphere/AppServer-9.0/profiles/ndm*/properties/soap.client.props
+
+
+DMGR checking
+--------------------
+
+/apps/WebSphere/AppServer-8.5/profiles/ManagedDataCapUat01/config/cells/ndmDataCapUat01/nodes/cskpcloudxn2357UatManager
+<specialEndpoints xmi:id="NamedEndPoint_9" endPointName="WC_adminhost">
+      <endPoint xmi:id="EndPoint_9" host="*" port="10000"/>
+    </specialEndpoints>
+    <specialEndpoints xmi:id="NamedEndPoint_10" endPointName="WC_adminhost_secure">
+      <endPoint xmi:id="EndPoint_10" host="*" port="10001"/>
+
+-------------------------------------------------------------------------
+Apache Web Server Not Running Status: Stopped
+
+then give hte command
+as root user
+service httpd start
+uptime
+
+./etc/httpd/conf.d
+
+to stop and start
+
+login to root
+
+apachectl -k stop
+
+apachectl  -k start
+
+apachectl -k start
+
+------------
+/usr/sbin/httpd -k start
+
+1) dzc2cxp00000743.kp-dmz.org - 162.119.230.144
+2) dzc2cxp00000767.kp-dmz.org - 162.119.248.54
+Nexus application 
+
+-------------------------------------------------------------------------------
+
+To clear JVM cache
+==================
+Delete temp and wstemp folder and run this command
+
+/apps/websphere/STG_WAS8.5/profiles/STGAppServerProfile/bin
+
+./clearClassCache.sh -  
+./osgiCfgInit.sh 
+
+./clearClassCache.sh;./osgiCfgInit.sh 
+
+ you can find temp folder before bin path
+to uninstall Completely 
+========================
+
+/apps/WebSphere/AppServer-7.0/profiles/ndmProd002ext/config/cells/ndmPROD002ext/cus .blas 
+  
+NPS active space checking
+-------------------------
+
+Enterprise Applications > npsispas > Manage message endpoints
+Enterprise Applications > npsirouter > Manage message endpoints
+Enterprise Applications > npsikprrs > Manage message endpoints
+Enterprise Applications > npsifs > Manage message endpoints
+Enterprise Applications > npsiems > Manage message endpoints
+Enterprise Applications > npsicm > Manage message endpoints
+Enterprise Applications > npsibets > Manage message endpoints
+Enterprise Applications > RUW_Application > Manage message endpoints
+
+crontab  tab checking 
+-----------------------
+Root access		   
+
+cp -r /tmp/prop.tar .
+
+cp -r /tmp/crontab .
+
+crontab -l list of job
+crontab -e modification job
+ tar -xvf prop.tar
+
+Raps script 
+run root access
+
+./syncNode.sh cskpcloudxp1011.cloud.kp.org 10003
+
+wzaqwa27.wcdc.kp.org 13003					 
+
+
+/var/adm/ras/APP_StartStopScripts.log
+
+raps script
+-----------------
+raps script location  /etc/init.d/APP_start
+
+pbrun /workfs/go
+root@nzadwa2 /users/wasadm
+ sh /users/wasadm/start.sh
+ sh /users/wasadm/stop.sh
+
+-/etc/rc.d/init.d/APPSVC
+
+log files path--/var/adm/ras
+
+/etc/systemd/system/ihs-admin.service
+
+/etc/systemd/system/ihs-cmdp.service
+
+----------------------------------
+OpenDeploy
+------------
+cd //etc/init.d
+pbrun ./iwod60 start
+
+stop:
+sudo /apps/iw-home/OpenDeployNG/etc/init.d/iwod60 stop
+start:
+sudo /apps/iw-home/OpenDeployNG/etc/init.d/iwod60 start
+The command to start OD service is login as ROOT execute /etc/init.d/iwodservice restart ( or stop then start)
+
+------------------------------
+login root user
+service httpd stop
+service httpd start
+systemctl status httpd
+
+---------------------------------------
+RAPS Scripts
+-----------------------
+
+sh /apps/WebSphere/AppServer-9.0/bin/shutdown_COS1to8_AllJvms.sh -----> stop 
+
+
+sh /apps/WebSphere/AppServer-9.0/bin/startUp_COS1to8_AllJvms.sh -----> start
+
+export JAVA_HOME=/apps/WebSphere/AppServer-9.0/java/8.0
+
+-----------------------------------------------------
+
+MUSTgather
+--------------------
+
+PMR--URL
+https://www.ibm.com/mysupport/s/case/5000z00001Ryu2rAAB/change-the-timeout-settings-to-10mins-or-15mins?openCase=true
+
+chown -R root:root
+
+MUSTgather : linux servers
+https://www.ibm.com/support/pages/mustgather-performance-hang-or-high-cpu-issues-websphere-application-server-linux
+
+
+																			
+How to check the OS version for AIX platform
+--------------------------------------------------
+
+uname 
+													   
+
+													 
+
+tar -cvf filename.tar  ------> tar file create 
+
+gzip / gunzip filename.tar --> filename.tar.gz -------> zip file 
+
+------------------------------------------
+sudo su - apache 
+
+ /apps/jboss/jbcs-httpd24-2.4/httpd/sbin/apachectl -k start -f /apps/jboss/jbcs-httpd24-2.4/httpd/conf/httpdQA1.conf
+
+alias-----> command 
+
+
+
+
+tar -xvf tar_filename --------> tar file extract
+
+
+
+gzip / gunzip filename.tar --> filename.tar.gz -------> 
+
+--------------------------------------------------------------------
+
+Mount commant only for cloud servers 
+
+mount -t nfs 10.15.76.36:/workfs/Software /mnt -o nfsvers=4 -o nolock
+
+ umount /mnt
+
+pbrun mount 10.15.76.36:/workfs/Software /mnt --. from your nuida										
+--------------------------------------------------------------------------------------
+
+
+PMR - updates
+---------------
+
+tar -cvf javacore_31x.tar *20200827*
+
+tar -cvf trace_32X.tar  /old_logs/trace
+
+gzip trace_32X.tar
+
+sftp sathees@msciftpgw.im-ies.ibm.com
+
+S@theesh.sr2911
+
+create the folders
+
+cd /IBM/ITVendors/Kyndryl/
+cd /IBM/ITVendors/IBM/TS004125127/
+
+ mput *.tar																			 
+-----------------------------------------------------------------------
+
+Location of RAPS  script irrespective of OS : /etc/rc.d/init.d/APPSVC
+
+On AIX servers we have symbolic link created at /etc/rc.d/rc2.d/
+
+On Linux servers( RHEL < 7)  we have symbolic link created at /etc/rc.d/rc3.d/
+
+On RHEL 7 systems we have systemd service file defined in /etc/systemd/system which in turn calls APPSVC script in /etc/rc.d/init.d/
+
+-------------------------------------------------------------------------------------------------------------
+
+ls -lrt trace_20.09.24*.log
+
+10.15.22.227 - DMZ file copy-------
+
+--------------------------
+
+4. cd /apps/ibm-ucd/DevOPSAgent/bin/
+5. ./agent start
+6. ps -ef |grep ucd
+
+
+mv trace_20.09.24*.log /old_logs/trace/.
+
+
+mv trace_20.09.24*.log /logs/NPS_RUW_WA29X/trace/.
+
+
+
+mkdir -m 777 trace
+
+----------------------------------------------------------------
+windows get space command
+----------------------------
+Get-PSDrive
+
+--------------------------------------------------------------------
+
+
+openssl pkcs12 -in test-prospect-medschool.kp.org.pfx -out test-prospect-medschool.kp.org.pem
+openssl pkcs12 -export -in test-prospect-medschool.kp.org.pem -out key.p12 -name "test-prospect-medschool.kp.org.crt"
+openssl pkcs12 -in test-prospect-medschool.kp.org.pem -nocerts -out test-prospect-medschool.kp.org_nocert.key
+openssl rsa -in test-prospect-medschool.kp.org_nocert.key -out test-prospect-medschool.kp.org.key
+
+openssl pkcs12 -in test-apply-medschool.kp.org.pfx -out test-apply-medschool.kp.org.pem
+openssl pkcs12 -export -in test-apply-medschool.kp.org.pem -out key-med.p12 -name "test-apply-medschool.kp.org.crt"
+openssl pkcs12 -in key-med.p12 -nocerts -out test-apply-medschool.kp.org_nocert.key
+openssl rsa -in test-apply-medschool.kp.org_nocert.key -out test-apply-medschool.kp.org.key
+
+---------------------------------------------------------------------
+
+Enterprise Applications > RUW_Application >runtime > Manage message endpoints
+https://xczapwa:20001/ibm/console
+
+
+
+-------------------------------
+[root@csc2cxn00003186 ~]# chage -l wasadm
+Last password change                                    : Feb 24, 2020
+Password expires                                        : never
+Password inactive                                       : never
+Account expires                                         : never
+Minimum number of days between password change          : 0
+Maximum number of days between password change          : 99999
+Number of days of warning before password expires       : 7
+[root@csc2cxn00003186 ~]#
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+DMGR-root path set to deployment
+------------------------------------
+
+$(APP_INSTALL_ROOT)/ndmQA525
+
+Deployment manager > Process definition > Java Virtual Machine > Custom properties
+----------------------------------------------------------------------------
+
+com.ibm.ws.management.fileservice.allAccess - true
+
+
+com.ibm.ws.console.webserver.anypath -true
+
+
+--------------------------------------------------------------
+Liberty
+-------
+
+/apps/WebSphere/Liberty/usr/servers/rts_instance02/dropins
+
+/apps/WebSphere/Liberty/usr/servers/or_instance02/dropins
+
+
+tar -cvzf openreports.tgz openreports
+
+-------------------------------------------------------------------
+EPIMS  group team
+
+ARS PHARM EPIMS SUPPORT
+-------------------------------------
+consule
+--------
+${SERVER_LOG_ROOT}/SystemOut.log
+${APPLICATION_LOGS}
+/logs/${WAS_SERVER_NAME}
+-----------------------------------------------------------
+openssl pkcs7 -print_certs -in certificatename.p7b -out certificatename.cer
+openssl pkcs12 -export -in certificatename.cer -inkey privateKey.key -out certificatename.pfx -certfile  cacert.cer
+
+ openssl pkcs12 -in scalihc.kp.org.pfx -out scalihc.pem
+ openssl pkcs12 -export -in scalihc.pem -out scalihc.p12 -name "scalihc.kp.org.crt" ------------> IHS
+
+
+ openssl pkcs12 -in scalihc.p12 -nocerts -out scal_0262.key
+ openssl rsa -in scal_0262.key -out server0262_scal.key    -------------->apachi
+
+-------------------------------------------------------------------------------------------------
+
+log4j checking 
+
+find / -type f -name "*og4j*" 2>/dev/null
+
+grep -r 'DBusername' /apps/WebSphere/AppServer-9.0/profiles/ndmxxx/config/*
+
+-------------------------------------------------------------------
+
+wasadm user password has been set to never expire on server 
+[root@csc2cxn00004266 ~]# vi /etc/cron.allow
+root
+wasadm
+
+------------------------------------
+ apache and opendeploy services
+-----------------------
+systemctl stop httpd 
+
+systemctl start httpd
+
+
+
+------------------------------------------
+
+uninstall - application 8.5.0
+--------------------------------
+
+/apps/WebSphere/InstallationManager/eclipse/tools/imcl uninstallAll -installationDirectory /apps/WebSphere/AppServer-8.5 -sP
+
+
+
+------------------------------------------------
+wasadm user password has been set to never expire on server 
+[root@csc2cxn00004266 ~]# vi /etc/cron.allow
+root
+wasadm
+
+
+chage -I -1 -m 0 -M 99999 -E -1 wasadm
+
+:%s/kams/kamsprod-dzc2cxp00021365/g
+
+chage -l wasadm
+
+jboss:
+--------
+/apps/jboss/jbcs-httpd24-2.4/httpd/sbin/apachectl -f /apps/jboss/jbcs-httpd24-2.4/httpd/conf/httpd.conf -k stop
+
+WebSphere Liberty  :Displays the product name, version, and edition 
+---------------------------------------------------------------------------------
+
+productInfo version
+productInfo version --ifixes
+
+-----------------------------------
+
+keytool -list -v -keystore trust.p12_error

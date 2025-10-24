@@ -1,0 +1,318 @@
+**** Make the folder structure********
+Open your terminal and run:
+mkdir -p kustomize-demo/base
+mkdir -p kustomize-demo/overlays/dev
+mkdir -p kustomize-demo/overlays/staging
+mkdir -p kustomize-demo/overlays/prod
+
+Your tree will look like:
+kustomize-demo/
+├── base/
+└── overlays/
+    ├── dev/
+    ├── staging/
+    └── prod/
+
+Add Base resources
+Go to kustomize-demo/base/ and create:
+✅ base/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+✅ base/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+✅ base/kustomization.yaml
+resources:
+  - deployment.yaml
+  - service.yaml
+---
+✅ Base is DONE ✅
+---
+Add Overlays
+Now let’s customize for dev, staging, prod.
+Each overlay will patch the number of replicas and the image tag.
+✅ overlays/dev/
+overlays/dev/patch-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: my-app
+        image: nginx:1.25-alpine
+overlays/dev/kustomization.yaml
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - patch-deployment.yaml
+---
+✅ overlays/staging/
+overlays/staging/patch-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: my-app
+        image: nginx:1.25
+
+overlays/staging/kustomization.yaml
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - patch-deployment.yaml
+---
+
+
+
+✅ overlays/prod/
+
+
+
+overlays/prod/patch-deployment.yaml
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 5
+  template:
+    spec:
+      containers:
+      - name: my-app
+        image: nginx:stable
+
+overlays/prod/kustomization.yaml
+
+
+
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - patch-deployment.yaml
+
+
+
+
+
+---
+
+
+
+✅ 4️⃣ Folder Tree You Now Have
+
+
+
+kustomize-demo/
+
+├── base/
+
+│   ├── deployment.yaml
+
+│   ├── service.yaml
+
+│   └── kustomization.yaml
+
+└── overlays/
+
+    ├── dev/
+
+    │   ├── kustomization.yaml
+
+    │   └── patch-deployment.yaml
+
+    ├── staging/
+
+    │   ├── kustomization.yaml
+
+    │   └── patch-deployment.yaml
+
+    └── prod/
+
+        ├── kustomization.yaml
+
+        └── patch-deployment.yaml
+
+
+
+
+
+---
+
+
+
+🌟 5️⃣ How to Build and See the Output
+
+
+
+✅ For dev:
+
+
+
+kustomize build kustomize-demo/overlays/dev
+
+
+
+✅ For staging:
+
+
+
+kustomize build kustomize-demo/overlays/staging
+
+
+
+✅ For prod:
+
+
+
+kustomize build kustomize-demo/overlays/prod
+
+
+
+You’ll see different replicas and images in each output.
+
+
+
+
+
+---
+
+
+
+🌟 6️⃣ How to Apply to a Cluster (Optional)
+
+
+
+If you have Kubernetes access:
+
+
+
+kubectl apply -k kustomize-demo/overlays/dev
+
+
+
+(Replace dev with staging or prod as needed)
+
+
+
+
+
+---
+
+
+
+🌟 7️⃣ Summary
+
+
+
+✅ Base = shared manifests
+
+✅ Overlays = environment-specific patches
+
+✅ Easy to extend with:
+
+
+
+ConfigMaps
+
+
+
+Secrets
+
+
+
+Labels
+
+
+
+Namespaces
+
+
+
+Image tags
+
+
+
+
+
+
+
+---
+
+
+
+🎁 If you want...
+
+
+
+Just tell me:
+
+
+
+⭐ "Give me a zip of all these" (I can give you a single text archive to copy-paste) ⭐ "Add ConfigMaps"
+
+⭐ "Add Secrets"
+
+⭐ "Add namespace definitions"
+
+⭐ "Explain kustomize generators"
+
+
+
+— and I’ll help you step by step!
+
+
+
+
+
+---
+
+
+
+If you're ready, just reply:
+
+
+
+✅ “I’m ready for the next step”
+
+✅ Or tell me what part you want to do next!

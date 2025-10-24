@@ -1,0 +1,238 @@
+Here's a full working example of how to build a Java EE EAR application using Maven, configure WebSphere Liberty, Dockerize it, and deploy to Kubernetes using:
+ 
+Deployment.yaml with 2 replicas
+ 
+readinessProbe & livenessProbe
+ 
+PersistentVolume & PersistentVolumeClaim
+ 
+Ingress for path-based routing
+ 
+NodePort service for external access
+ 
+ 
+ 
+---
+ 
+✅ 1. Maven Project Setup to Build EAR
+ 
+pom.xml
+ 
+http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ 
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId>
+  <artifactId>sample-ear</artifactId>
+  <version>1.0.0</version>
+  <packaging>ear</packaging>
+ 
+  <modules>
+    <module>sample-ejb</module>
+    <module>sample-web</module>
+  </modules>
+ 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-ear-plugin</artifactId>
+        <version>3.1.0</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+ 
+ 
+---
+ 
+✅ 2. WebSphere Liberty server.xml
+ 
+src/main/liberty/config/server.xml
+ 
+<server description="Sample EAR Server">
+ 
+  <featureManager>
+    <feature>javaee-8.0</feature>
+    <feature>servlet-4.0</feature>
+  </featureManager>
+ 
+  <httpEndpoint id="defaultHttpEndpoint"
+                host="*"
+                httpPort="9080"
+                httpsPort="9443" />
+ 
+  <applicationManager autoExpand="true"/>
+ 
+  <enterpriseApplication id="sample-ear"
+                         location="sample-ear.ear"
+                         type="ear" />
+ 
+</server>
+ 
+ 
+---
+ 
+✅ 3. Dockerfile
+ 
+Dockerfile
+ 
+FROM icr.io/appcafe/websphere-liberty:kernel-slim-java8-openj9-ubi
+ 
+COPY target/sample-ear.ear /config/dropins/
+COPY src/main/liberty/config/server.xml /config/
+CoPY src/main/liberty/config/db.xml /config/
+COPY src/main/liberty/config/jvm.options /config/
+ 
+EXPOSE 9080
+ 
+HEALTHCHECK CMD curl --fail http://localhost:9080/health || exit 1
+ 
+CMD ["server", "run", "defaultServer"]
+ 
+ 
+---
+ 
+✅ 4. Push to Docker Hub
+ 
+docker build -t yourdockerhub/sample-ear:v1 .
+docker push yourdockerhub/sample-ear:v1
+ 
+ 
+---
+ 
+✅ 5. Kubernetes Deployment
+ 
+deployment.yaml
+ 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-ear
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sample-ear
+  template:
+    metadata:
+      labels:
+        app: sample-ear
+    spec:
+      containers:
+      - name: sample-ear
+        image: yourdockerhub/sample-ear:v1
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - mountPath: /config
+          name: config-volume
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: config-pvc
+ 
+ 
+---
+ 
+✅ 6. Service (NodePort)
+ 
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-ear-service
+spec:
+  selector:
+    app: sample-ear
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9080
+    nodePort: 30080
+ 
+ 
+---
+ 
+✅ 7. Persistent Volume & Claim
+ 
+pv-pvc.yaml
+ 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: config-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/config
+ 
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: config-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+ 
+ 
+---
+ 
+✅ 8. Ingress with Path-Based Routing
+ 
+ingress.yaml
+ 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sample-ear-ingress
+  annotations:
+nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+- host: yourdomain.com
+    http:
+      paths:
+      - path: /ear
+        pathType: Prefix
+        backend:
+          service:
+            name: sample-ear-service
+            port:
+              number: 80
+ 
+> Make sure your ingress controller is installed and configured.
+ 
+ 
+ 
+ 
+---
+ 
+✅ 9. Apply All Kubernetes Files
+ 
+kubectl apply -f pv-pvc.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl apply -f ingress.yaml
+ 
+ 
